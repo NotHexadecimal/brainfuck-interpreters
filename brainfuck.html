@@ -1,0 +1,143 @@
+<html>
+  <head>
+    <title>Brainfuck</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Nova+Mono&display=swap');
+      body {
+        font-family: 'Nova Mono', monospace;
+      }
+      button {
+        font-family: 'Nova Mono', monospace;
+        padding: 10px;
+        background-color: #2f60ff;
+        color: white;
+        border-style: none;
+        border-radius: 5px;
+      }
+      h1 {
+        margin: auto;
+      }
+      #input {
+        font-family: 'Nova Mono', monospace;
+        padding: 10px;
+        border-radius: 5px;
+        border-style: none;
+        background-color: #ddd;
+        width: 100%;
+        margin-bottom: 20px;
+      }
+      #code {
+        font-family: 'Nova Mono', monospace;
+        padding: 10px;
+        border-radius: 5px;
+        border-style: none;
+        background-color: #ddd;
+        width: calc(100% - 85px);
+      }
+      #out {
+        overflow-wrap: break-word;
+      }
+      .container {
+        max-width: 800px;
+        padding: 20px;
+        background-color: #eee;
+        border-radius: 5px;
+        margin: auto;
+      }
+    </style>
+    <script defer>
+      function exec() {
+        brainfuck(document.getElementById('code').value, document.getElementById('input').value);
+      };
+      const buildParensMap = program => {
+        parensMap = {};
+        //debugger;
+        for (const i in program) {
+          if (program[i] === '[') {
+            let done = false;
+            let parensCount = 0;
+            for (let j = + i + 1; j < program.length; j++){
+              if (program[j] === '[') {
+                parensCount++;
+              } else if (program[j] === ']') {
+                if (parensCount) {
+                  parensCount--;
+                } else {
+                  parensMap[+j] = +i;
+                  parensMap[+i] = +j;
+                  done = 1;
+                  break;
+                }
+              }
+            }
+            if (!done) {
+              throw new Error('invalid codez');
+            }
+          }
+        }
+        return parensMap;
+      }
+      const modulo256 = n => ((n % 256) + 256) % 256
+      const brainfuck = program => {
+        const parensMap = buildParensMap(program);
+        const out = document.getElementById('out');
+        out.textContent = '';
+        let memoryPointer = 0;
+        let programCounter = 0;
+        let inputPointer = 0;
+        const memory = new Array(4096).fill(0);
+        while (true) {
+          switch (program[programCounter]) {
+            case '+':
+              memory[memoryPointer] = modulo256(++memory[memoryPointer]);
+              break;
+            case '-':
+              memory[memoryPointer] = modulo256(--memory[memoryPointer]);
+              break;
+            case '>':
+              memoryPointer++;
+              break;
+            case '<':
+              memoryPointer--;
+              break;
+            case '[':
+              if (!memory[memoryPointer]) {
+                programCounter = +parensMap[programCounter];
+              }
+              break;
+            case ']':
+              if (memory[memoryPointer]) {
+                programCounter = +parensMap[programCounter];
+              }
+              break;
+            case '.':
+              out.textContent += String.fromCharCode(memory[memoryPointer]);
+              break;
+            case ',':
+              if (inputPointer < input.length) {
+                memory[memoryPointer] = input[inputPointer];
+                inputPointer++;
+              } else {
+                memory[memoryPointer] = 0;
+              }
+              break;
+          }
+          programCounter++;
+          if (programCounter > program.length) {
+            break;
+          }
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Brainfuck interpreter</h1>
+      <input id="input" placeholder="Program input"></input>
+      <input id="code" placeholder="Program code"></input>
+      <button onclick="exec()">Esegui!</button>
+      <p>Output:</p>
+      <p id="out"></p>
+    </div>
+  </body>
+</html>
