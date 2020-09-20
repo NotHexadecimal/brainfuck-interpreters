@@ -1,4 +1,4 @@
-##### This is a simple Lua interpreter for brainfuck.
+# This is a simple Lua interpreter for brainfuck.
 
 I have tested it using both Lua5.4 and Luajit (both work, **luajit is recommended**).
 
