@@ -7,7 +7,6 @@ local interpreter = require("deps/interpreter") -- import the interpreter
 
 local function read_brainfuckery() --reads the whole code and passes it to the caller as a string
     if arg[1] then
-        print(arg[1])
         local file = io.open(arg[1])
         if file then return file:read("*a")
         else

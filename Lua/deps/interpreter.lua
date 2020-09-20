@@ -19,7 +19,7 @@ local function optimizer(buf)
     while i < max_i do
         ::continue::
         old_i = i
-        while string.find(buf[i], "p%([%-]?%d%)") do
+        while string.find(buf[i] or "", "p%([%-]?%d%)") do
             c = string.match(buf[i], "p%(([%-]?%d)%)") + c
             i = i + 1
         end
@@ -28,7 +28,7 @@ local function optimizer(buf)
             c = 0
         end
         if i ~= old_i then goto continue end-- se è stato ottimizzato allora riparti con il checker
-        while string.find(buf[i], "add%([%-]?%d%)") do
+        while string.find(buf[i] or "", "add%([%-]?%d%)") do
             c = string.match(buf[i], "add%(([%-]?%d)%)") + c
             i = i + 1
         end
