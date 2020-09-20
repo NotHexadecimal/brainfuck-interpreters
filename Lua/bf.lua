@@ -1,6 +1,7 @@
 ---
---- Created by Rampeo Mattone.
+--- Created by Rampeo Mattone (aka Nylon)
 --- DateTime: 2020-09-18 23:22
+--- Last updated: 2020-09-20 15:04
 ---
 
 local interpreter = require("deps/interpreter") -- import the interpreter
@@ -14,19 +15,20 @@ local function read_brainfuckery() --reads the whole code and passes it to the c
             os.exit(false)
         end
     else
-        io.write("\nType the code you want to execute. input a \"__stop__\" on a newline to finish:\n")
+        io.write("\nType the code you want to execute. input \"__stop__\" on a newline to finish:\n")
         local buffer = {}
         repeat
             local l = io.read()
             table.insert(buffer, l)
         until l == "__stop__"
+	print("Stopped reading from the buffer!")
         return table.concat(buffer)
     end
 end
 
 local code = interpreter(read_brainfuckery())
 local prog = load(code)
-io.write("\nTranslation has terminated. Would you like to run the code? (Y/n) -> ")
+io.write("\nTranslation to a lua chunk has terminated. Would you like to run the code? (Y/n) -> ")
 if string.lower(io.read()) ~= "n" then
     print("====================== S T A R T ======================")
     local status, error = pcall(prog)
@@ -36,9 +38,10 @@ end
 io.write("\nWould you like to save the translated code as a .lua file? (y/N) -> ")
 if string.lower(io.read()) == "y" then
     io.write("\nType the name of the new file (???.lua) -> ")
-    local file = io.open(io.read() .. ".lua", "w+")
+    local filename = io.read()
+    local file = io.open(filename .. ".lua", "w+")
     file:write(code)
     file:close()
-    print("Done")
+    print(string.format("Finished writing code to %s.lua", filename))
 end
 print("Exiting...")

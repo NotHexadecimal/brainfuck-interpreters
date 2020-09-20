@@ -14,6 +14,7 @@ local input = function() values[pointer] = string.byte(io.read(1)) end\
 \n"
 
 local function optimizer(buf)
+    print("optimizing...")
     local opt = {}
     local i, max_i, c, old_i = 1, #buf + 1, 0 -- i -> itera nel buf, max_i serve per non andare oltre i limiti del buffer
     while i < max_i do
@@ -41,10 +42,12 @@ local function optimizer(buf)
         table.insert(opt, buf[i])
         i = i + 1
     end
+    print("Finished optimizing!")
     return table.concat(opt, "\n")
 end
 
 interpreter = function(bf)
+    print("interpreting...")
     local code_buf = {}
     for op in bf:gmatch("[<>%.,%+%-%[%]]") do
         if op == ">" then
@@ -65,6 +68,7 @@ interpreter = function(bf)
             table.insert(code_buf, "end")
         end
     end
+    print("Finished interpreting!")
     return premade_fun .. optimizer(code_buf)
 end
 
