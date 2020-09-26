@@ -12,7 +12,7 @@ func main() {
 	ptr := [30000]byte{}
 
 	data, _ := ioutil.ReadFile(os.Args[1])
-
+	
 	splitted := strings.Split(string(data), "")
 
 	for ip < len(splitted) {
