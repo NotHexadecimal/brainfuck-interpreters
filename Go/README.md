@@ -1,4 +1,4 @@
-# Go brainfuck intepreter
+# Go brainfuck interpreter
 Simple brainfuck interpreter written in Go
 
-Accepts input from stdin
+The program accepts a file as an argument.

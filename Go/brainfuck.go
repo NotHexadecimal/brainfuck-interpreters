@@ -2,16 +2,18 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
 	"strings"
 )
 
 func main() {
-	ptr := [30000]byte{}
-	var line string
 	var dp, ip int
+	ptr := [30000]byte{}
 
-	_, _ = fmt.Scan(&line)
-	splitted := strings.Split(line, "")
+	data, _ := ioutil.ReadFile(os.Args[1])
+
+	splitted := strings.Split(string(data), "")
 
 	for ip < len(splitted) {
 
@@ -54,6 +56,9 @@ func main() {
 				ip++
 			}
 
+		default:
+			ip++
+
 		}
 	}
 }
@@ -84,5 +89,6 @@ func findBracket(code []string, pointer int, dir bool) int {
 			}
 		}
 	}
+
 	return -1
 }
