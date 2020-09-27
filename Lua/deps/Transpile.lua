@@ -3,15 +3,7 @@
 --- Created by rm.
 --- DateTime: 2020-09-20 12:46
 ---
-local premade_fun = "\
-local values, pointer = {}, 0\
-setmetatable(values, {__index = function() return 0 end})\
-local v = function() return values[pointer] end\
-local p = function(val) pointer = pointer + val end\
-local add = function(val) values[pointer] = (values[pointer] + val) % 256 end\
-local out = function() io.write(string.char(v())) end\
-local input = function() values[pointer] = string.byte(io.read(1)) end\
-\n"
+local premade_fun = "local v, p, add, out, input = require(\"deps/BrainStructure\")"
 
 local function optimizer(buf)
     print("optimizing...")
@@ -47,7 +39,7 @@ local function optimizer(buf)
 end
 
 interpreter = function(bf)
-    print("interpreting...")
+    print("Transpiling...")
     local code_buf = {}
     for op in bf:gmatch("[<>%.,%+%-%[%]]") do
         if op == ">" then
@@ -68,7 +60,7 @@ interpreter = function(bf)
             table.insert(code_buf, "end")
         end
     end
-    print("Finished interpreting!")
+    print("Finished transpiling!")
     return premade_fun .. optimizer(code_buf)
 end
 
