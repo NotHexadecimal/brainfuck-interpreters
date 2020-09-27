@@ -21,7 +21,7 @@ local function read_brainfuckery() --reads the whole code and passes it to the c
             local l = io.read()
             table.insert(buffer, l)
         until l == "__stop__"
-	print("Stopped reading from the buffer!")
+        print("Stopped reading from the buffer!")
         return table.concat(buffer)
     end
 end
