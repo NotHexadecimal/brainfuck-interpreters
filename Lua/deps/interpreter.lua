@@ -9,7 +9,7 @@ setmetatable(values, {__index = function() return 0 end})\
 local v = function() return values[pointer] end\
 local p = function(val) pointer = pointer + val end\
 local add = function(val) values[pointer] = (values[pointer] + val) % 256 end\
-local out = function() io.write(string.char(v())); end\
+local out = function() io.write(string.char(v())) end\
 local input = function() values[pointer] = string.byte(io.read(1)) end\
 \n"
 
