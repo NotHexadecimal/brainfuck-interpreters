@@ -3,7 +3,7 @@
 --- Created by rm.
 --- DateTime: 2020-09-20 12:46
 ---
-local premade_fun = "local v, p, add, out, input = require(\"deps/BrainStructure\")"
+local premade_fun = "local v, p, add, out, input = table.unpack((require(\"deps/BrainStructure\")))\n"
 
 local function optimizer(buf)
     print("optimizing...")

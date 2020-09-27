@@ -3,7 +3,7 @@
 --- Created by rm.
 --- DateTime: 26/09/20 21:30
 ---
-local v, p, add, out, input = require("deps/BrainStructure")
+local v, p, add, out, input = table.unpack((require("deps/BrainStructure")))
 local read_brainfuckery = require("deps/Read")
 
 local function find_p (tab, start)

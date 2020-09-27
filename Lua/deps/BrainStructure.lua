@@ -11,4 +11,4 @@ local function add(val) values[pointer] = (values[pointer] + val) % 256 end
 local function out() io.write(string.char(v())); io.flush() end
 local function input() values[pointer] = string.byte(io.read(1)) end
 
-return v, p, add, out, input
+return {v, p, add, out, input}
