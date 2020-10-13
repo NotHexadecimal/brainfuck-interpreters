@@ -46,12 +46,13 @@
       }
     </style>
     <script defer>
+      // Button handler function
       function exec() {
         brainfuck(document.getElementById('code').value, document.getElementById('input').value);
       };
+      // Builds a map of opposing parenthesis locations to speed up cycles execution
       const buildParensMap = program => {
         parensMap = {};
-        //debugger;
         for (const i in program) {
           if (program[i] === '[') {
             let done = false;
@@ -77,14 +78,17 @@
         }
         return parensMap;
       }
+      // Modulo helper function needed because the js modulo operator doesn't work on negative numbers
       const modulo256 = n => ((n % 256) + 256) % 256
-      const brainfuck = program => {
+      // The interpreter logic
+      const brainfuck = (program, input) => {
         const parensMap = buildParensMap(program);
         const out = document.getElementById('out');
         out.textContent = '';
         let memoryPointer = 0;
         let programCounter = 0;
         let inputPointer = 0;
+        // This should technically be 30000 instead of 4096
         const memory = new Array(4096).fill(0);
         while (true) {
           switch (program[programCounter]) {
@@ -115,7 +119,7 @@
               break;
             case ',':
               if (inputPointer < input.length) {
-                memory[memoryPointer] = input[inputPointer];
+                memory[memoryPointer] = input.charCodeAt(inputPointer);
                 inputPointer++;
               } else {
                 memory[memoryPointer] = 0;
