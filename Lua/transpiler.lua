@@ -4,7 +4,7 @@
 --- Last updated: 2020-09-20 15:04
 ---
 
-local interpreter = require("deps/interpreter") -- import the interpreter
+local interpreter = require("deps/Transpile") -- import the interpreter
 
 local function read_brainfuckery() --reads the whole code and passes it to the caller as a string
     if arg[1] then
@@ -21,7 +21,7 @@ local function read_brainfuckery() --reads the whole code and passes it to the c
             local l = io.read()
             table.insert(buffer, l)
         until l == "__stop__"
-	print("Stopped reading from the buffer!")
+        print("Stopped reading from the buffer!")
         return table.concat(buffer)
     end
 end
