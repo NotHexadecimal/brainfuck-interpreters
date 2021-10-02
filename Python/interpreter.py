@@ -14,11 +14,12 @@ def build_brackets_map(code):
           else:
             brackets_map[index] = other_index + index + 1
             brackets_map[other_index + index + 1] = index
+            break
   return brackets_map
 
 def run(code, text_in = ''):
   brackets_map = build_brackets_map(code)
-  memory = [0] * 4096
+  memory = [0] * 30000
   program_pointer = 0
   memory_pointer = 0
   input_pointer = 0
