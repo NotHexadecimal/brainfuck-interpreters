@@ -1,22 +1,28 @@
 import sys
 
 
-def build_brackets_map(code):
-    brackets_map = {}
+def brackets_iter(code):
+    brackets_stack = []
     for index, instruction in enumerate(code):
         if instruction == '[':
-            depth = 0
-            for other_index, other_instruction in enumerate(code[index + 1:]):
-                if other_instruction == '[':
-                    depth += 1
-                elif other_instruction == ']':
-                    if depth:
-                        depth -= 1
-                    else:
-                        brackets_map[index] = other_index + index + 1
-                        brackets_map[other_index + index + 1] = index
-                        break
-    return brackets_map
+            brackets_stack.append(index)
+        elif instruction == ']':
+            start = brackets_stack.pop()
+            if start is not None:
+                yield (start, index)
+            else:
+                raise Exception("Unmatched ']' at position {0}".format(index))
+    if len(brackets_stack) != 0:
+        positions = ", ".join(brackets_stack)
+        raise Exception("Unmatched '[' at position(s) {0}".format(positions))
+
+
+def build_brackets_map(code):
+    brackets = {}
+    for start, end in brackets_iter(code):
+        brackets[start] = end
+        brackets[end] = start
+    return brackets
 
 
 def run(code, text_in=''):
