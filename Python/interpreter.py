@@ -90,7 +90,7 @@ def run(code: str, text_in=''):
     memory_pointer = 0
     input_pointer = 0
 
-    icount = len(code)
+    icount = len(grouped)
     while program_pointer < icount:
         instruction, data = grouped[program_pointer]
         if instruction == '+':
