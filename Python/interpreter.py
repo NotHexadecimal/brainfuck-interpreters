@@ -1,7 +1,9 @@
 import sys
+from typing import Iterable, Iterator, Dict, Tuple
 
 
-def brackets_iter(code):
+def brackets_iter(code: Iterable[str]) -> Iterator[Tuple[int, int]]:
+    """Iterate on the start/end indexes of loops"""
     brackets_stack = []
     for index, instruction in enumerate(code):
         if instruction == '[':
@@ -13,11 +15,12 @@ def brackets_iter(code):
             else:
                 raise Exception("Unmatched ']' at position {0}".format(index))
     if len(brackets_stack) != 0:
-        positions = ", ".join(brackets_stack)
+        positions = ", ".join([str(c) for c in brackets_stack])
         raise Exception("Unmatched '[' at position(s) {0}".format(positions))
 
 
-def build_brackets_map(code):
+def build_brackets_map(code: Iterable[str]) -> Dict[int, int]:
+    """Collect bracket indexes into a jump table"""
     brackets = {}
     for start, end in brackets_iter(code):
         brackets[start] = end
@@ -25,7 +28,8 @@ def build_brackets_map(code):
     return brackets
 
 
-def run(code, text_in=''):
+def run(code: str, text_in=''):
+    """Run the code"""
     brackets_map = build_brackets_map(code)
     memory = [0] * 30000
     program_pointer = 0
