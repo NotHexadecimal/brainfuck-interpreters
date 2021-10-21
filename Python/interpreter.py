@@ -1,3 +1,6 @@
+"""This is a supposedly simple python interpreter for brainfuck, \
+but stuff got out of hand really quickly"""
+
 import sys
 from typing import Iterable, Iterator, Dict, Tuple
 
@@ -19,6 +22,14 @@ def brackets_iter(code: Iterable[str]) -> Iterator[Tuple[int, int]]:
         raise Exception("Unmatched '[' at position(s) {0}".format(positions))
 
 
+def check_brackets(code: Iterable[str]):
+    try:
+        for _ in brackets_iter(code):
+            pass
+    except Exception as e:
+        print(f"Error while parsing program: {e}")
+
+
 def build_brackets_map(code: Iterable[str]) -> Dict[int, int]:
     """Collect bracket indexes into a jump table"""
     brackets = {}
@@ -28,30 +39,74 @@ def build_brackets_map(code: Iterable[str]) -> Dict[int, int]:
     return brackets
 
 
+def group_intructions(code: Iterator[str]) -> Iterator[Tuple[str, int]]:
+    """Takes an iterator of istructions and groups together adjacent ones \
+    when possible"""
+    flip = {
+        '+': '-',
+        '-': '+',
+        '<': '>',
+        '>': '<',
+    }
+
+    count = 1
+    prev = next(code)
+
+    def to_yield():
+        if prev in ('.', ',', '[', ']'):
+            return prev, 0
+        if count >= 0:
+            return prev, count
+        return flip[prev], abs(count)
+
+    for cur in code:
+        if (cur, prev) in (('+', '+'), ('-', '-'), ('<', '<'), ('>', '>')):
+            count += 1
+        elif (cur, prev) in (('+', '-'), ('-', '+'), ('<', '>'), ('>', '<')):
+            count -= 1
+        else:
+            ret = to_yield()
+            prev = cur
+            count = 1
+            yield ret
+    else:
+        yield to_yield()
+
+
 def run(code: str, text_in=''):
     """Run the code"""
-    brackets_map = build_brackets_map(code)
+
+    check_brackets(code)
+    filtered = [i for i in code if i in ('+', '-', '<', '>', '[', ']', ',', '.')]
+    grouped = list(group_intructions(iter(filtered)))
+    for start, end in brackets_iter([i for i, _ in grouped]):
+        i, _ = grouped[start]
+        grouped[start] = i, end - 1
+        i, _ = grouped[end]
+        grouped[end] = i, start - 1
+
     memory = [0] * 30000
     program_pointer = 0
     memory_pointer = 0
     input_pointer = 0
 
-    while True:
-        instruction = code[program_pointer]
+    icount = len(code)
+    while program_pointer < icount:
+        instruction, data = grouped[program_pointer]
         if instruction == '+':
-            memory[memory_pointer] = (memory[memory_pointer] + 1) % 256
+            memory[memory_pointer] = (memory[memory_pointer] + data) % 256
         elif instruction == '-':
-            memory[memory_pointer] = (memory[memory_pointer] - 1) % 256
+            memory[memory_pointer] = (memory[memory_pointer] - data) % 256
         elif instruction == '>':
-            memory_pointer += 1
+            memory_pointer += data
         elif instruction == '<':
-            memory_pointer -= 1
+            memory_pointer -= data
         elif instruction == '[':
             if not memory[memory_pointer]:
-                program_pointer = brackets_map[program_pointer]
+                program_pointer = data
         elif instruction == ']':
             if memory[memory_pointer]:
-                program_pointer = brackets_map[program_pointer]
+                program_pointer = data
         elif instruction == '.':
             print(chr(memory[memory_pointer]), end='')
         elif instruction == ',':
@@ -61,8 +116,6 @@ def run(code: str, text_in=''):
             else:
                 memory[memory_pointer] = 0
         program_pointer += 1
-        if program_pointer == len(code):
-            break
 
 
 if __name__ == '__main__':
