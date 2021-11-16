@@ -4,4 +4,7 @@ Implementations:
 - Javascript: [@NotHexadecimal](https://github.com/NotHexadecimal)
 - Go: [@TheTipo01](https://github.com/TheTipo01)
 - Rust: [@techmccat](https://github.com/techmccat)
-- Lua: [@Nylon](https://github.com/RampeoMattone)
+- Lua: [@Nylon](https://github.com/nylone)
+- Mips: [@Nylon](https://github.com/nylone)
+- Java: [@Nylon](https://github.com/nylone)
+- C: [@Nylon](https://github.com/nylone)
