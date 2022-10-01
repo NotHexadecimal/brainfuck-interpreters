@@ -63,7 +63,6 @@ const brainfuck = (program: string, input: string = ''): string => {
         break;
       case '.':
         out += String.fromCharCode(memory[memoryPointer]);
-        console.log(String.fromCharCode(memory[memoryPointer]));
         break;
       case ',':
         if (inputPointer < input.length) {
