@@ -12,7 +12,7 @@ Implementations:
 - Scala: [@techmccat]
 - Typescript: [@NotHexadecimal]
 
-[@NotHexadecimal](https://github.com/NotHexadecimal)
-[@TheTipo01](https://github.com/TheTipo01)
-[@techmccat](https://github.com/techmccat)
-[@Nylon](https://github.com/nylone)
+[@NotHexadecimal]: https://github.com/NotHexadecimal
+[@TheTipo01]: https://github.com/TheTipo01
+[@techmccat]: https://github.com/techmccat
+[@Nylon]: https://github.com/nylone
