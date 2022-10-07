@@ -8,3 +8,6 @@ Implementations:
 - Mips: [@Nylon](https://github.com/nylone)
 - Java: [@Nylon](https://github.com/nylone)
 - C: [@Nylon](https://github.com/nylone)
+- Python: [@NotHexadecimal](https://github.com/NotHexadecimal)
+- Scala: [@techmccat](https://github.com/techmccat)
+- Typescript: [@NotHexadecimal](https://github.com/NotHexadecimal)
