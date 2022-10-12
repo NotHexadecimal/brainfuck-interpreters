@@ -2,6 +2,8 @@
 
 Fairly fast brainfuck interpreter written in rust with instruction grouping, fast loops and optional (on by default) JIT compiler based on GNU lightning.
 
+Usage: <binary> [-i <input-file> | "input string"]
+
 ## Dependencies
 
 If the jit feature is enabled you'll need GNU lightning installed on your system (lightning-devel on fedora)
