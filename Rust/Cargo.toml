@@ -1,9 +1,16 @@
 [package]
-name = "rust-bf"
+name = "smol-bf"
 version = "0.1.0"
-authors = ["techmccat <alessioa02004@gmail.com>"]
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+name = "smol-bf"
 
-[dependencies]
+[dependencies.lightning-sys]
+git = "https://github.com/petelliott/lightning-sys"
+rev = "b8d2eb8"
+optional = true
+
+[features]
+default = ["jit"]
+jit = ["lightning-sys"]

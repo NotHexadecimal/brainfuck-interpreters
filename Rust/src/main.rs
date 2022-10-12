@@ -1,38 +1,33 @@
-use std::{env, fs, io, process};
+use std::{
+    env,
+    fs::File,
+    io::{self, stdout, Read, Write},
+};
 
-fn main() {
-    let args: Vec<String> = env::args().collect();
-    let mut prog = String::new();
-    let mut input = String::new();
+use smol_bf::ProgramBuilder;
 
-    if args.len() > 1 {
-        if args[1] == "-h" || args[1] == "--help" {
-            println!(
-                "Usage: {} <filename>
-If a filename is not provided code is read from standard input
--h, --help: Shows this message",
-                args[0]
+fn main() -> io::Result<()> {
+    let mut args = env::args().skip(1);
+    let program = {
+        let arg = args.next().expect("no input provided");
+        if arg == "-i" {
+            let input = args.next().expect("no file provided");
+            let mut input = File::open(input)?;
+            let mut read = String::with_capacity(
+                input.metadata().map(|meta| meta.len()).unwrap_or_default() as usize,
             );
+            input.read_to_string(&mut read)?;
+            read
         } else {
-            prog = fs::read_to_string(&args[1])
-                .expect("Error. I didn't quite get that.\nNo such file");
+            arg
         }
-    } else {
-        io::stdin()
-            .read_line(&mut prog)
-            .expect("Error. I didn't quite get that");
-    }
+    };
 
-    let input = if prog.contains(",") {
-        eprintln!("Enter the input characters");
-        io::stdin()
-            .read_line(&mut input)
-            .expect("Error. I didn't quite get that");
-        Some(&input.trim()[..])
-    } else { None };
+    let input = args.next();
+    let program = ProgramBuilder::new(&program, input.as_deref());
+    let res = program.run();
 
-    match rust_bf::run(&prog[..], input) {
-        Ok(output)  => print!("{}", output),
-        Err(err)    => { eprintln!("{}", err); process::exit(1) }
-    }
+    stdout().lock().write_all(res.as_bytes())?;
+
+    Ok(())
 }
