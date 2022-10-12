@@ -1,130 +1,130 @@
-use std::{collections::HashMap,num::Wrapping};
-fn maploops(bytes: &[u8]) -> Result<HashMap<usize, usize>, String> {
-    //Do a first pass on the program, adds every ['s position to a LIFO queue, pop from the vector and
-    //add to a hashmap every time a ] is found.
-    let mut map = HashMap::new();
-    let mut open: Vec<usize> = Vec::new();
-    let mut i: usize = 0;
-    while i < bytes.len() {
-        match bytes[i] {
-            b'[' => open.push(i),
-            b']' => {
-                let last = if let Some(last) = open.pop() {
-                    last
-                } else {
-                    return Err(format!(
-                        "Error. I didn't quite get that.\nUnmatched bracket at {}",
-                        i
-                    ));
-                };
-                map.insert(last, i);
-                map.insert(i, last);
-            }
-            _ => (),
-        }
-        i += 1
-    }
-    if open.len() != 0 {
-        return Err(format!(
-            "Error. I didn't quite get that.\nUnmatched bracket at {}",
-            open.pop().unwrap()
-        ));
-    }
-    Ok(map)
-}
+use opt::*;
+use std::{num::Wrapping, process::exit};
 
-fn exec(bytes: &[u8], map: HashMap<usize, usize>, input: Option<&str>) -> Result<String, String> {
-    let mut mem: [Wrapping<u8>; 30000] = [Wrapping(0); 30000];
-    //30000 seems like the standard memory size, expand as needed.
-    let mut i: usize = 0; //position in memory
-    let mut p: usize = 0; //position in program
-    let mut b: usize = 0; //position in input buffer
-    let mut output = String::new();
-    let input = if let Some(a) = input {a} else {""};
-    while p < bytes.len() {
-        match bytes[p] {
-            b'>' => {
-                if i != 30000 {
-                    i += 1
-                } else {
-                    return Err(String::from(
-                        "Error, I didn't quite get that.\nOut of memory bounds",
-                    ));
-                }
-            }
-            b'<' => {
-                if i != 0 {
-                    i -= 1
-                } else {
-                    return Err(String::from(
-                        "Error, I didn't quite get that.\nOut of memory bounds",
-                    ));
-                }
-            }
-            b'+' => {
-                mem[i] += Wrapping(1)
-            }
-            b'-' => {
-                mem[i] -= Wrapping(1)
-            }
-            b'.' => {
-                output.push(mem[i].0 as char);
-            }
-            b',' => {
-                mem[i] = {
-                    b += 1;
-                    if let Some(char) = input.as_bytes().get(b - 1) {
-                        Wrapping(*char)
-                    } else { return Err(String::from("Error, I didn't quite get that.\nInput too short."))}
-                }
-            }
-            b'[' => {
-                if mem[i].0 == 0 {
-                    p = map[&p]
-                }
-            }
-            b']' => {
-                if mem[i].0 != 0 {
-                    p = map[&p]
-                }
-            }
-            _ => (),
-        }
-        p += 1
-    }
-    Ok(output)
-}
+mod opt;
 
-pub fn run(program: &str, input: Option<&str>) -> Result<String, String> {
-    let bytes = program.as_bytes();
-    let loops = maploops(bytes)?;
-    let output = exec(bytes, loops, input)?;
-    Ok(output)
-}
+#[cfg(feature = "jit")]
+mod jit;
 
 #[cfg(test)]
-mod tests {
-    use super::*;
+mod tests;
 
-    #[test]
-    fn in_out() {
-        assert_eq!(run(",.", Some("a")).unwrap(), String::from("a"));
+/// Takes a brainfuck program and prepares it for execution
+pub struct ProgramBuilder<'a> {
+    input: Option<&'a str>,
+    code: &'a str,
+}
+
+impl<'a> ProgramBuilder<'a> {
+    /// Create a new program builder
+    pub fn new(code: &'a str, input: Option<&'a str>) -> Self {
+        Self { input, code }
     }
 
-    #[test]
-    fn loop_math() {
-        assert_eq!(run("+++++[>++++++++++<-]>-.", None).unwrap(), String::from("1"));
+    /// Runs the program
+    pub fn run(self) -> String {
+        let mapped = self.code.chars().filter_map(char_to_ir);
+        let grouped = group_insts(mapped);
+
+        let loops = find_loops(&grouped);
+        let grouped = optimize_loops(&grouped, &loops);
+
+        #[cfg(feature = "jit")]
+        return jit::compile_and_run(&grouped, self.input.unwrap_or_default());
+
+        #[cfg(not(feature = "jit"))]
+        {
+            let mut grouped = grouped;
+            let loops = find_loops(&grouped);
+
+            for (start, end) in loops {
+                grouped[start] = Instruction::LoopStart(end as u32);
+                grouped[end] = Instruction::LoopEnd(start as u32);
+            }
+
+            interpret_insts(&grouped, self.input.unwrap_or_default())
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+enum Instruction {
+    Add(Wrapping<u8>),
+    Move(isize),
+    LoopStart(u32),
+    LoopEnd(u32),
+    Read,
+    Write,
+    Clear,
+    SeekLeft,
+    SeekRight
+}
+
+fn char_to_ir(c: char) -> Option<Instruction> {
+    Some(match c {
+        '+' => Instruction::Add(Wrapping(1)),
+        '-' => Instruction::Add(Wrapping(255)),
+        '<' => Instruction::Move(-1),
+        '>' => Instruction::Move(1),
+        '[' => Instruction::LoopStart(0),
+        ']' => Instruction::LoopEnd(0),
+        '.' => Instruction::Write,
+        ',' => Instruction::Read,
+        _ => return None,
+    })
+}
+
+fn find_loops(insts: &[Instruction]) -> Vec<(usize, usize)> {
+    let mut stack = vec![];
+    let mut out = vec![];
+
+    for (pos, inst) in insts.iter().enumerate() {
+        match inst {
+            Instruction::LoopStart(_) => stack.push(pos),
+            Instruction::LoopEnd(_) => out.push((stack.pop().unwrap(), pos)),
+            _ => (),
+        };
     }
 
-    #[test]
-    #[should_panic]
-    fn out_of_memory() {
-        run("<", None).unwrap();
+    if !stack.is_empty() {
+        eprintln!("{count} unmatched brackets", count = stack.len());
+        exit(1)
     }
 
-    #[test]
-    #[should_panic]
-    fn out_of_input() {
-        run(",", None).unwrap();
+    out
+}
+
+#[cfg(not(feature = "jit"))]
+fn interpret_insts(code: &[Instruction], input: &str) -> String {
+    let mut code_ptr = 0;
+    let mut mem = [Wrapping(0); u16::MAX as usize];
+    let mut ptr = Wrapping(0u16);
+    let mut output = Vec::new();
+    let mut input = input.as_bytes().iter();
+
+    while code_ptr < code.len() {
+        match code[code_ptr] {
+            Instruction::Add(n) => mem[ptr.0 as usize] += n,
+            Instruction::Move(n) => ptr += Wrapping(n as u16),
+            Instruction::Write => output.push(mem[ptr.0 as usize].0),
+            Instruction::Read => mem[ptr.0 as usize] = Wrapping(*input.next().unwrap_or(&0)),
+            Instruction::LoopStart(jump) => {
+                if mem[ptr.0 as usize].0 == 0 {
+                    code_ptr = jump as usize - 1
+                }
+            }
+            Instruction::LoopEnd(jump) => {
+                if mem[ptr.0 as usize].0 != 0 {
+                    code_ptr = jump as usize - 1
+                }
+            }
+            Instruction::Clear => mem[ptr.0 as usize] = Wrapping(0),
+            Instruction::SeekLeft => while mem[ptr.0 as usize].0 != 0 { ptr -= Wrapping(1) }
+            Instruction::SeekRight => while mem[ptr.0 as usize].0 != 0 { ptr += Wrapping(1) }
+        }
+
+        code_ptr += 1;
     }
+
+    String::from_utf8_lossy(&output).to_string()
 }
